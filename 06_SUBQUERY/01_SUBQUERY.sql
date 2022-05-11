@@ -385,13 +385,43 @@ ORDER BY SALARY DESC;
 
 -- 이미 순번이 정해진 다음에 정렬이 되었다. 
 -- FROM → SELECT (순번이 정해진다.) → ORDER BY 
-
-SELECT ROWNUM, A.EMP_NAME, A.SALARY -- A*는 모든 컬럼을 본다고 해도 서브 쿼리의 결과가 테이블이므로 
+-- SELECT ROWNUM A* : 별칭의 모든 값을 가져온다.
+-- 모든 컬럼을 본다고 해도 서브 쿼리의 결과가 테이블이므로 
+SELECT ROWNUM, A.EMP_NAME, A.SALARY  -- 별칭으로 값을 가져온다. 
 FROM (
       SELECT EMP_NAME, SALARY
       FROM EMPLOYEE
       ORDER BY SALARY DESC
 ) A -- 컬럼명을 지정할 수 있다. 
+WHERE ROWNUM <= 5;
+
+-- FROM절 외부에서 별칭을 지정한 경우, 별칭을 생략해도 문제가 없다. 
+SELECT ROWNUM, EMP_NAME, SALARY   
+FROM (
+      SELECT *
+      FROM EMPLOYEE
+      ORDER BY SALARY DESC
+) A -- 별칭 지정 
+WHERE ROWNUM <= 5;
+
+-- FROM절 내부에서 별칭을 지정한 경우, 컬럼명으로 불러오면 오류가 난다. [ERROR]
+SELECT ROWNUM, EMP_NAME, SALARY   
+FROM (
+      SELECT EMP_NAME "이름",
+             SALARY "급여"
+      FROM EMPLOYEE
+      ORDER BY SALARY DESC
+) 
+WHERE ROWNUM <= 5;
+
+-- FROM절 내부에서 별칭을 지정한 경우, 별칭으로 불러오면 오류가 나지 않는다.
+SELECT ROWNUM, "이름", "급여"   
+FROM (
+      SELECT EMP_NAME "이름",
+             SALARY "급여"
+      FROM EMPLOYEE
+      ORDER BY SALARY DESC
+) 
 WHERE ROWNUM <= 5;
 
 -- 2-1) 부서별 평균 급여가 높은 3개의 부서의 부서 코드, 평균 급여 조회
@@ -400,7 +430,18 @@ WHERE ROWNUM <= 5;
 -- 함수를 사용하는 구문이나 연산식이 컬럼에 들어가면 반드시 별칭을 붙여야 에러가 나지 않는다.
 SELECT ROWNUM AS "순위", "부서 코드", ROUND("평균 급여")
 FROM (
-      SELECT DEPT_CODE AS "부서 코드", 
+      SELECT NVL(DEPT_CODE, '부서 없음') AS "부서 코드", 
+             AVG(NVL(SALARY, 0)) AS "평균 급여"
+      FROM EMPLOYEE
+      GROUP BY DEPT_CODE
+      ORDER BY "평균 급여" DESC
+      )
+WHERE ROWNUM <= 3;
+
+-- 별칭을 붙이지 않은 식은 컬럼명으로 가져올 수 있다.
+SELECT ROWNUM AS "순위", DEPT_CODE, ROUND("평균 급여")
+FROM (
+      SELECT DEPT_CODE, 
              AVG(NVL(SALARY, 0)) AS "평균 급여"
       FROM EMPLOYEE
       GROUP BY DEPT_CODE
