@@ -121,7 +121,7 @@ SELECT * FROM V_JOB;
 SELECT * FROM JOB;
 
 -- VIEW에 UPDATE 실행
-UPDATE V_JOBㄴ
+UPDATE V_JOB
 SET JOB_NAME = '인턴'
 WHERE JOB_CODE = 'J8';
 
@@ -143,8 +143,8 @@ CREATE OR REPLACE VIEW V_JOB
 AS SELECT JOB_CODE
    FROM JOB;
 
--- 뷰에 정의되어 있지 않은 컬럼 JOB_NAME을 조작하는 DML 작성
 -- INSERT
+-- 뷰에 정의되어 있지 않은 컬럼 JOB_NAME을 조작하는 DML 작성
 INSERT INTO V_JOB VALUES('J8');
 INSERT INTO V_JOB VALUES('J8', '인턴'); -- <too many values>
 
