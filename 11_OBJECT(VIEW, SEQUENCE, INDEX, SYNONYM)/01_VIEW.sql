@@ -145,14 +145,11 @@ AS SELECT JOB_CODE
 
 -- INSERT
 -- 뷰에 정의되어 있지 않은 컬럼 JOB_NAME을 조작하는 DML 작성
+-- <too many values>
 INSERT INTO V_JOB VALUES('J8');
-INSERT INTO V_JOB VALUES('J8', '인턴'); -- <too many values>
-
-SELECT * FROM JOB;
-SELECT * FROM V_JOB;
+INSERT INTO V_JOB VALUES('J8', '인턴'); 
 
 -- UPDATE 
-
 -- 없는 컬럼을 가지고 조작을 할 때 오류가 발생한다. 
 -- <invalid identifier>
 UPDATE V_JOB
@@ -173,18 +170,16 @@ WHERE JOB_NAME = '사원';
 DELETE FROM V_JOB
 WHERE JOB_CODE = 'J0';
 
-
-
+SELECT * FROM JOB;
+SELECT * FROM V_JOB;
 
 -- 2. 뷰에 포함되지 않은 컬럼 중에 베이스가 되는 컬럼이 NOT NULL 제약조건이 지정된 경우
-
 CREATE OR REPLACE VIEW V_JOB
 AS SELECT JOB_NAME
    FROM JOB;
 
 -- INSERT
 INSERT INTO V_JOB VALUES('인턴');
--- JOB_CODE에는 PK가 걸려있고 NOT NULL도 제약조건으로 되어있기 때문에 JOB 테이블에도 안된다. 
 
 -- UPDATE
 UPDATE V_JOB
@@ -193,7 +188,6 @@ WHERE JOB_NAME = '사원';
 -- └ 기존에 있는 컬럼을 변경하는 것은 가능하다. 
 
 -- DELETE
-
 DELETE FROM V_JOB
 WHERE JOB_NAME = '인턴';
 -- 자식 테이블의 행들 중에서 부모테이블을 참조하고 있는 행들이 있기 때문에 삭제할 수 없다. (FK 제약조건)
@@ -203,10 +197,6 @@ ROLLBACK;
 
 SELECT * FROM JOB;
 SELECT * FROM V_JOB;
-
-
-
-
 
 -- 3. 산술 표현식으로 정의된 경우
 -- 사원들의 급여 정보를 조회하는 뷰
@@ -224,25 +214,19 @@ AS SELECT EMP_ID,
 SELECT * FROM V_EMP_SAL;
 
 -- INSERT
--- 산술연산으로 정의된 컬럼은 데이터 삽입 불가능
--- VIEW(가상 테이블, V_EMP_SAL)에 DML작업을 하면 실제 테이블(EMPLOYEE)에 영향을 준다.
+-- 가상 테이블에 데이터를 입력하면 실제 테이블에 데이터를 입력한 것과 같다.
+-- 즉, VIEW(가상 테이블, V_EMP_SAL)에 DML작업을 하면 실제 테이블(EMPLOYEE)에 영향을 준다.
 -- EMPLOYEE 테이블에는 <연봉>이라는 컬럼이 없고, V_EMP_SAL에 <연봉> 컬럼을 가상 테이블로 만들었다. 
--- 가상 테이블에 데이터를 입력하면 실제 테이블에 데이터를 입력한 것과 같은데 
 -- 실제 테이블에는 <연봉> 컬럼이 없으므로 데이터를 입력할 수 없다. 
+-- 즉, 산술연산으로 정의된 컬럼은 데이터 삽입 불가능
 INSERT INTO V_EMP_SAL VALUES('1000', '홍길동', '940321-1111111', 3000000, 36000000); -- <virtual column not allowed here>
 
 -- 산술연산과 무관한 컬럼은 데이터 삽입 가능
 INSERT INTO V_EMP_SAL(EMP_ID, EMP_NAME, EMP_NO, SALARY) VALUES('100', '홍길동', '940321-1111111', 3000000);
 
 -- 해당 테이블에는 <연봉> 컬럼이 없다
-SELECT * FROM EMPLOYEE;
-
--- VIEW(가상 테이블, V_EMP_SAL)에 DML작업을 하면 실제 테이블(EMPLOYEE)에 영향을 준다.
--- EMPLOYEE 테이블에는 <연봉>이라는 컬럼이 없고, V_EMP_SAL에 <연봉> 컬럼을 가상 테이블로 만들었다. 
--- 가상 테이블에 데이터를 입력하면 실제 테이블에 데이터를 입력한 것과 같은데 
--- 실제 테이블에는 <연봉> 컬럼이 없으므로 데이터를 입력할 수 없다. 
-SELECT * FROM V_EMP_SAL;
-
+SELECT * FROM EMPLOYEE ORDER BY EMP_ID;
+SELECT * FROM V_EMP_SAL ORDER BY EMP_ID;
 
 -- UPDATE
 UPDATE V_EMP_SAL
@@ -260,8 +244,8 @@ WHERE EMP_ID = 100;
 DELETE FROM V_EMP_SAL
 WHERE "연봉" = 600000;
 
-SELECT * FROM EMPLOYEE;
-SELECT * FROM V_EMP_SAL;
+SELECT * FROM EMPLOYEE ORDER BY EMP_ID;
+SELECT * FROM V_EMP_SAL ORDER BY EMP_ID;
 
 
 -- 4. 그룹 함수나 GROUP BY 절을 포함한 경우
@@ -279,7 +263,7 @@ AS SELECT DEPT_CODE,
    
 
 -- INSERT
-INSERT INTO V_EMP_SAL VALUES('D0', 8000000, 4000000); -- <virtual column not allowed here>
+INSERT INTO V_EMP_SAL VALUES('D1', 8000000, 4000000); -- <virtual column not allowed here>
 INSERT INTO V_EMP_SAL(DEPT_CODE) VALUES('D0');
 -- 에러 이유 1) DEPT_CODE는 PK라서 NULL 또는 부모 테이블(DEPARTMENT)에서 참조하는 값만 넣을 수 있다.
 -- 에러 이유 2) NOT NULL 조건, DEPT_CODE 말고 다른 키들 중 NOT NULL 제약 조건이 걸려서 넣을 수 없다.
@@ -291,22 +275,27 @@ WHERE DEPT_CODE = 'D1';
 -- 에러 이유 1) D1은 부서코드가 D1인 사원들을 그룹핑한 값이라서 연산 자체가 문제가 있다. 
 -- 에러 이유 2) 가상 테이블의 값이기 때문에 불가 
 
+SELECT * FROM V_EMP_SAL;
+SELECT * FROM EMPLOYEE ORDER BY DEPT_CODE;
+
 UPDATE V_EMP_SAL
 SET DEPT_CODE = 'D3'
 WHERE DEPT_CODE = 'D1';
+-- DEPTE_CODE는 그룹핑한 값이라서 불가능
 
 -- DELETE 
+-- data manipulation operation not legal on this view
 DELETE FROM V_EMP_SAL
 WHERE DEPT_CODE = 'D1';
 
-SELECT * FROM V_EMP_SAL; -- data manipulation operation not legal on this view
-
+SELECT * FROM V_EMP_SAL; 
 
 -- 5. DISTINCT를 포함한 경우
 CREATE VIEW V_EMP_JOB
 AS SELECT DISTINCT JOB_CODE
    FROM EMPLOYEE;
-   
+
+SELECT JOB_CODE FROM V_EMP_JOB ORDER BY JOB_CODE;
 
 -- INSERT
 INSERT INTO V_EMP_JOB VALUES('J7'); -- <data manipulation operation not legal on this view>
@@ -353,21 +342,19 @@ UPDATE V_EMP
 SET EMP_NAME = '서동일'
 WHERE EMP_ID = '200'; 
 
-
 -- DELETE 
-
--- EMPLOYEE 테이블에 있는 <총무부> 사원만 삭제
+-- EMPLOYEE 테이블과 V_EMP에 있는 <총무부> 사원만 삭제
 -- 서브쿼리의 FROM절에 테이블에만 영향을 끼쳐서 삭제가 되고 메인쿼리의 FROM절에 테이블에는 영향이 없다. 
 DELETE FROM V_EMP
 WHERE DEPT_TITLE = '총무부';
 
+SELECT * FROM V_EMP;
+SELECT * FROM EMPLOYEE;
+SELECT * FROM DEPARTMENT;
 
 -- 기존 테이블에 있던 컬럼의 값은 변경할 수 있다. 
 DELETE FROM V_EMP
 WHERE EMP_ID = '200';
-
-
-
 
 SELECT * FROM V_EMP;
 SELECT * FROM EMPLOYEE;
@@ -418,8 +405,6 @@ CREATE TABLE TEST_TABLE (
 SELECT * FROM V_EMP_02;
 
 
-
-
 /*
     3. WITH CHECK OPTION	
         서브 쿼리에 기술된 조건에 부합하지 않는 값으로 수정하는 경우 오류를 발생시킨다.
@@ -428,6 +413,8 @@ CREATE VIEW V_EMP_03
 AS SELECT * 
    FROM EMPLOYEE
    WHERE SALARY >= 3000000;
+
+SELECT * FROM V_EMP_03;
 
 -- 선동일 사장님의 급여를 200만원으로 변경 → 서브 쿼리의 조건에 부합하지 않아도 변경이 가능하다. 
 UPDATE V_EMP_03 
@@ -458,12 +445,9 @@ UPDATE V_EMP_03
 SET SALARY = 4000000
 WHERE EMP_ID = '200';
 
-
 SELECT * FROM V_EMP_03;
 SELECT * FROM EMPLOYEE;
 SELECT * FROM USER_VIEWS;
-
-
 
 /*
     4. WITH READ ONLY	
@@ -503,14 +487,3 @@ DROP VIEW V_EMP_SAL;
 DROP VIEW JOB;
 
 SELECT * FROM USER_VIEWS;
-
-
-
-/*
-
-
-*/
-
-
-
-
