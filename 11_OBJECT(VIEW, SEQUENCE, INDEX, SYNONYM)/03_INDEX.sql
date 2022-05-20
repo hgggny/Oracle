@@ -1,5 +1,6 @@
 /*
     <INDEX>
+        INDEX는 오라클에서 제공하는 객체로 SQL 명령문의 처리 속도를 향상시키기 위해서 행들의 위치 정보를 가지고 있다.
 */
 SELECT ROWID, 
        EMP_ID, 
@@ -9,35 +10,37 @@ FROM EMPLOYEE;
 SELECT ROWID,
       DEPT_ID
 FROM DEPARTMENT;
-
+-- CARDINALITY : 조회되는 행의 개수 / COST : 자원(CPU나 메모리)을 얼마나 사용했는지를 나타낸다. 
 
 SELECT * 
-FROM EMPLOYEE
+FROM EMPLOYEE 
 WHERE EMP_ID = 202;
 
+-- 춘 대학교 계정(STUDY)으로 이동
 SELECT * 
 FROM TB_STUDENT
---WHERE STUDENT_NAME = '황효종';
-WHERE STUDENT_NO = 'A511332';
-
+WHERE STUDENT_NAME = '황효종';  
+--WHERE STUDENT_NO = 'A511332'; -- COST가 이름으로 했을 때보다 빠르다
+ 
 -- 키 값(STUDENT_NAME)에 이미 중복된 값이 있기 때문에 오류 발생 <duplicate keys found>
 CREATE UNIQUE INDEX IDX_STUDENT_NAME
 ON TB_STUDENT(STUDENT_NAME);
 
--- 비고유 인덱스 생성 ---------------------------------깃 확인하기
-CREATE INDEX IDX_STUDENT_NAME
+-- 비고유 인덱스 생성
+CREATE /*UNIQUE*/ INDEX IDX_STUDENT_NAME
 ON TB_STUDENT(STUDENT_NAME);
-
+ 
 -- 결합인덱스 생성
 -- A617031   C2272800
 SELECT *
 FROM TB_GRADE
 WHERE STUDENT_NO = 'A617031' AND CLASS_NO = 'C2272800';
 
-
 CREATE INDEX IDX_STUDENT_CLASS_NO
 ON TB_GRADE(STUDENT_NO, CLASS_NO);
 
 -- INDEX 삭제
 DROP INDEX IDX_STUDENT_NAME;
+DROP INDEX IDX_STUDENT_CLASS_NO;
+
 
