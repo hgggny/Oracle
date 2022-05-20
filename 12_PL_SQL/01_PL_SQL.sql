@@ -154,7 +154,6 @@ BEGIN
     IF (BONUS IS NULL) THEN
         DBMS_OUTPUT.PUT_LINE('보너스를 지급받지 않는 사원입니다.');
     END IF;
-    
     DBMS_OUTPUT.PUT_LINE('보너스 : ' || BONUS);
 END;
 /
@@ -188,7 +187,6 @@ BEGIN
     ELSE 
         DBMS_OUTPUT.PUT_LINE('보너스율 : ' || BONUS * 100 || '%');
     END IF;
-    
     
 END;
 /
@@ -242,7 +240,7 @@ WHERE EMP_ID = '200';
 -- 70점 이상은 'C'학점
 -- 60점 이상은 'D'학점
 -- 60점 미만은 'F'학점
--- 출력은 '당신읜 점수는 95점이고, 학점은 A학점입니다.'와 같이 출력한다.
+-- 출력은 '당신의 점수는 95점이고, 학점은 A학점입니다.'와 같이 출력한다.
 
 DECLARE
     SCORE NUMBER;
@@ -307,10 +305,6 @@ BEGIN
 END;
 /
 
-
-
-
-
 -- 사용자에게 입력받은 사번과 일치하는 사원의 급여 조회 후 출력한다. 
 -- 500만원 이상이면 '고급'
 -- 300만원 이상이면 '중급'
@@ -339,18 +333,18 @@ END;
 /
 
 DECLARE
-    SALARY EMPLOYEE.SALARY%TYPE;
+    SAL EMPLOYEE.SALARY%TYPE;
     GRADE SAL_GRADE.SAL_LEVEL%TYPE;
 BEGIN
     SELECT SALARY
-    INTO SALARY
+    INTO SAL
     FROM EMPLOYEE
     WHERE EMP_ID = '&사번';
     
     SELECT SAL_LEVEL
     INTO GRADE
     FROM SAL_GRADE
-    WHERE SALARY BETWEEN MIN_SAL AND MAX_SAL;
+    WHERE SAL BETWEEN MIN_SAL AND MAX_SAL;
     
     DBMS_OUTPUT.PUT_LINE('해당 사원의 급여 등급은 ' || GRADE || '입니다.');
 END;
@@ -387,25 +381,3 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('부서명 : ' || DTITLE);
 END;
 /
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
