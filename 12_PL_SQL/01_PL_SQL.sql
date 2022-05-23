@@ -381,3 +381,195 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('부서명 : ' || DTITLE);
 END;
 /
+
+/*
+    2) 반복문
+*/
+-- 2-1) BASIC LOOP
+-- 1 ~ 5까지 순차적으로 1씩 증가하는 값을 출력
+DECLARE
+    NUM NUMBER := 1;
+BEGIN
+    LOOP
+        DBMS_OUTPUT.PUT_LINE(NUM);
+        
+        NUM := NUM + 1;
+        
+--        IF NUM > 5 THEN
+--            EXIT;
+--        END IF;
+        EXIT WHEN NUM > 10;
+    END LOOP;
+END;
+/
+
+-- 2-2) WHILE LOOP
+-- 1 ~ 5까지 순차적으로 1씩 증가하는 값을 출력
+DECLARE
+    NUM NUMBER := 1;
+BEGIN
+    WHILE NUM <= 5
+    LOOP
+        DBMS_OUTPUT.PUT_LINE(NUM);
+        
+        NUM := NUM + 1;
+    END LOOP;
+END;
+/
+
+-- 구구단 출력 (2 ~ 9단)
+DECLARE 
+    DAN NUMBER := 2;
+    SU NUMBER;
+    RESULT NUMBER;
+BEGIN
+    WHILE DAN <= 9
+    LOOP
+        SU := 1;
+        
+        WHILE SU <= 9
+        LOOP
+            RESULT := DAN * SU;
+            
+            DBMS_OUTPUT.PUT_LINE(DAN || ' X ' || SU || ' = ' || RESULT);
+            
+            SU := SU + 1;
+        END LOOP;
+        DBMS_OUTPUT.PUT_LINE(' ');
+        DAN := DAN + 1;
+    END LOOP;
+END;
+/
+
+-- 2-3) FOR LOOP
+-- 1 ~ 5까지 순차적으로 1씩 증가하는 값을 출력
+BEGIN
+    FOR NUM IN 1..5
+    LOOP
+        DBMS_OUTPUT.PUT_LINE(NUM);
+    END LOOP;
+END;
+/
+
+-- 역순으로 출력
+BEGIN
+    FOR NUM IN REVERSE 1..5
+    LOOP
+        DBMS_OUTPUT.PUT_LINE(NUM);
+    END LOOP;
+END;
+/
+
+
+-- 구구단(2 ~ 9단) 출력 단, 짝수단만 출력한다.
+BEGIN
+    FOR DAN IN 2..9
+    LOOP
+        IF (MOD(DAN, 2) = 0) THEN 
+            FOR SU IN 1..9
+            LOOP
+                DBMS_OUTPUT.PUT_LINE(DAN || ' X ' || SU || ' = ' || DAN * SU);
+            END LOOP;
+        END IF;
+        DBMS_OUTPUT.PUT_LINE('');
+    END LOOP;
+END;
+/
+
+-- 반복문을 이용한 데이터 삽입
+-- 실습 테이블 만들기
+DROP TABLE TEST;
+
+CREATE TABLE TEST (
+     NUM NUMBER,
+     CREATE_DATE DATE
+);
+
+TRUNCATE TABLE TEST;
+SELECT * FROM TEST;
+ROLLBACK;
+
+-- TEST 테이블에 10개의 행을 INSERT 하는 PL/SQL 작성
+BEGIN
+    FOR NUM IN 1..10
+    LOOP
+        INSERT INTO TEST VALUES(NUM, SYSDATE);
+        
+        IF (MOD(NUM, 2) = 0) THEN
+            COMMIT;
+        ELSE
+            ROLLBACK;
+        END IF;
+        
+    END LOOP;
+END;
+/
+
+SELECT * FROM TEST;
+
+
+/*
+    3. 예외처리부
+        PL/SQL 문에서 발생하는 예외를 처리하는 영역이다. 
+        
+        * 오라클에서 미리 정의되어 있는 예외
+            - NO_DATA_FOUND : SELECT 문의 수행 결과가 한 행도 없을 경우에 발생한다. 
+            - TOO_MANY_ROWS : 한 행이 리턴되어야 하는데 SELECT 문에서 여러 개의 행을 반환할 때 발생한다. 
+            - ZERO_DIVIDE   : 숫자를 0으로 나눌 때 발생한다. 
+            - DUP_VAL_ON_INDEX : UNIQUE 제약조건을 가진 컬럼에 중복된 데이터가 INSERT 될 때 발생한다. 
+*/
+
+-- 사용자가 입력한 수로 나눗셈 연산 결과를 출력
+DECLARE 
+    RESULT NUMBER;
+    
+BEGIN
+    RESULT := 10 / &숫자;
+    
+    DBMS_OUTPUT.PUT_LINE('결과 : ' || RESULT);
+
+EXCEPTION
+    WHEN ZERO_DIVIDE THEN DBMS_OUTPUT.PUT_LINE('나누기 연산시 O으로 나눌 수 없습니다.');
+END;
+/
+
+
+-- UNIQUE 제약조건 위배 시 발생하는 예외 <unique constraint (KH.EMPLOYEE_PK) violated>
+
+BEGIN
+    UPDATE EMPLOYEE
+    SET EMP_ID = 200
+    WHERE EMP_NAME = '&이름';
+
+EXCEPTION 
+--    WHEN DUP_VAL_ON_INDEX THEN DBMS_OUTPUT.PUT_LINE('이미 존재하는 사번입니다.');
+    WHEN OTHERS THEN DBMS_OUTPUT.PUT_LINE('오류가 발생했습니다.');
+END;
+/
+
+-- 너무 많은 행이 조회가 되었을 때
+SELECT EMP_ID, MANAGER_ID
+FROM EMPLOYEE
+WHERE MANAGER_ID = 200;
+
+DECLARE
+    EID EMPLOYEE.EMP_ID%TYPE;
+    MID EMPLOYEE.MANAGER_ID%TYPE;
+    
+BEGIN
+    SELECT EMP_ID, MANAGER_ID
+    INTO EID, MID
+    FROM EMPLOYEE
+    WHERE MANAGER_ID = &사수사번;
+    
+    DBMS_OUTPUT.PUT_LINE('사번 : ' || EID);
+    DBMS_OUTPUT.PUT_LINE('사수 사번 : ' || MID);
+EXCEPTION 
+    WHEN TOO_MANY_ROWS THEN DBMS_OUTPUT.PUT_LINE('너무 많은 행이 조회되었습니다. ');
+    WHEN NO_DATA_FOUND THEN DBMS_OUTPUT.PUT_LINE('조회 결과가 없습니다.');
+    WHEN OTHERS THEN DBMS_OUTPUT.PUT_LINE('오류가 발생했습니다.');
+END;
+/
+
+
+
