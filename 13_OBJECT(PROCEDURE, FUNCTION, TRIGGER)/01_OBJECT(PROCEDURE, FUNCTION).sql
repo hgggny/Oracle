@@ -136,29 +136,3 @@ EXEC :VAR_BONUS_CALC := BONUS_CALC('200');
 -- EMPLOYEE 테이블에서 전체 사원의 사번, 직원명, 급여, 보너스, 보너스를 포함한 연봉을 조회 (BONUS_CALC 함수 사용)
 SELECT EMP_ID, EMP_NAME, SALARY, BONUS, BONUS_CALC(EMP_ID)
 FROM EMPLOYEE;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
